@@ -1,0 +1,7 @@
+{
+    "jar_folder_path": "jar",
+    "mode": "rand",
+    "cases": 100,
+    "max_input": 10000,
+    "clean": false
+}
