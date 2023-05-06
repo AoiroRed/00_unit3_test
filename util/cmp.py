@@ -1,7 +1,10 @@
 import os
-import sys
 import logging
+import json
 from colorama import Fore
+
+
+MAX_DIFF = json.load(open('config.json', 'r'))['max_diff']
 
 
 def cmp(files, case=-1):
@@ -25,13 +28,13 @@ def cmp(files, case=-1):
                     break
                 if line != '':
                     flag = 1
-            if flag == 0 or diff_cnt == 10:
+            if flag == 0 or diff_cnt == MAX_DIFF:
                 if diff_cnt == 0:
                     print(Fore.GREEN, end='')
                     logging.info('Same!')
                     print(Fore.RESET, end='')
                     return True
-                elif diff_cnt == 10:
+                elif diff_cnt == MAX_DIFF:
                     print(Fore.YELLOW, end='')
                     logging.error('Too many different lines!')
                     print(Fore.RESET, end='')
@@ -39,12 +42,15 @@ def cmp(files, case=-1):
             elif flag == -1:
                 diff_cnt += 1
                 if diff_cnt == 1:
-                    logging.error(f'TESTCASE #{case}')
+                    errorLogger = logging.getLogger('error')
+                    errorLogger.error('-' * 30)
+                    errorLogger.error(f'TESTCASE #{case}')
                 print(Fore.RED, end='')
                 logging.error('Different on line %d:' % line_cnt)
                 print(Fore.RESET, end='')
                 for i in range(len(lines)):
-                    logging.error('%-8s: ' % os.path.basename(files[i])[:-4] + lines[i])
+                    logging.error('%-8s: ' %
+                                  os.path.basename(files[i])[:-4] + lines[i])
                 for i in range(len(lines)).__reversed__():
                     if lines[i] == '':
                         del f[i]
