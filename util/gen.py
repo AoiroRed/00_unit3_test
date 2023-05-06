@@ -2,6 +2,7 @@ import random
 
 MAX_NAME_LEN = 10
 MAX_AGE = 200
+MIN_VALUE = 1
 MAX_VALUE = 100
 MIN_MODIFY_VALUE = -100
 MAX_MODIFY_VALUE = 100
@@ -28,7 +29,7 @@ def rand_age():
 
 
 def rand_value():
-    return random.randint(0, MAX_VALUE)
+    return random.randint(MIN_VALUE, MAX_VALUE)
 
 
 def rand_modify_value():
