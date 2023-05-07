@@ -1,7 +1,7 @@
 import random
 import json
 
-
+TYPE = json.load(open('config.json', 'r'))['gen_setting']['type']
 MAX_NAME_LEN = 10
 MAX_AGE = 200
 MIN_VALUE = 1
@@ -10,7 +10,8 @@ MIN_MODIFY_VALUE = -100
 MAX_MODIFY_VALUE = 100
 MIN_SOCIAL_VALUE = -1000
 MAX_SOCIAL_VALUE = 1000
-
+USED_ID_PROB = 0.9
+SAME_ID_PROB = 0.1
 
 person_id = set()
 group_id = set()
@@ -43,8 +44,8 @@ def rand_social_value():
     return random.randint(MIN_SOCIAL_VALUE, MAX_SOCIAL_VALUE)
 
 
-def rand_id(used_id=person_id):
-    if len(used_id) == 0 or random.choice([True, True, False]):
+def rand_id(used_id=person_id, same_id_prob=USED_ID_PROB):
+    if len(used_id) == 0 or random.random() < same_id_prob:
         id = random.randint(-10, 100)
         used_id.add(id)
     else:
@@ -100,7 +101,7 @@ query_received_messages id(int)
 
 
 def gen_add_person():
-    return f'ap {rand_id()} {rand_name()} {rand_age()}'
+    return f'ap {rand_id(same_id_prob=SAME_ID_PROB)} {rand_name()} {rand_age()}'
 
 
 def gen_add_relation():
@@ -124,7 +125,7 @@ def gen_query_triple_sum():
 
 
 def gen_add_group():
-    return f'ag {rand_id(group_id)}'
+    return f'ag {rand_id(group_id, same_id_prob=SAME_ID_PROB)}'
 
 
 def gen_add_to_group():
@@ -195,19 +196,82 @@ def op_normal():
     return ops
 
 
-def qcs_strong():
+def ba_strong():
     ops = [gen_add_person] * 15
-    ops += [gen_add_relation] * 25
+    ops += [gen_add_relation] * 20
     ops += [gen_modify_relation] * 15
+    ops += [gen_query_best_acquaintance] * 1
     ops += [gen_query_couple_sum] * 1
     return ops
 
 
-TYPE = json.load(open('config.json', 'r'))['gen_setting']['type']
+def message_strong():
+    ops = [gen_add_person] * 10
+    ops += [gen_add_relation] * 15
+    ops += [gen_query_value] * 1
+    ops += [gen_query_circle] * 2
+    ops += [gen_query_block_sum] * 1
+    ops += [gen_query_triple_sum] * 1
+    ops += [gen_add_group] * 6
+    ops += [gen_add_to_group] * 8
+    ops += [gen_del_from_group] * 3
+    ops += [gen_query_group_value_sum] * 1
+    ops += [gen_query_group_age_var] * 1
+    ops += [gen_modify_relation] * 6
+    ops += [gen_query_best_acquaintance] * 1
+    ops += [gen_query_couple_sum] * 2
+    ops += [gen_add_message] * 4
+    ops += [gen_send_message] * 4
+    ops += [gen_query_social_value] * 1
+    ops += [gen_query_received_messages] * 1
+    return ops
+
+
+def group_strong():
+    ops = [gen_add_person] * 10
+    ops += [gen_add_relation] * 15
+    ops += [gen_query_value] * 1
+    ops += [gen_query_circle] * 2
+    ops += [gen_query_block_sum] * 1
+    ops += [gen_query_triple_sum] * 1
+    ops += [gen_add_group] * 6
+    ops += [gen_add_to_group] * 8
+    ops += [gen_del_from_group] * 3
+    ops += [gen_query_group_value_sum] * 1
+    ops += [gen_query_group_age_var] * 1
+    ops += [gen_modify_relation] * 6
+    ops += [gen_query_best_acquaintance] * 1
+    ops += [gen_query_couple_sum] * 2
+    ops += [gen_add_message] * 4
+    ops += [gen_send_message] * 4
+    ops += [gen_query_social_value] * 1
+    ops += [gen_query_received_messages] * 1
+    return ops
+
+
+def exception_strong():
+    ops = [gen_add_person] * 10
+    ops += [gen_add_relation] * 15
+    ops += [gen_query_value] * 1
+    ops += [gen_query_circle] * 2
+    ops += [gen_add_group] * 6
+    ops += [gen_add_to_group] * 8
+    ops += [gen_del_from_group] * 3
+    ops += [gen_query_group_value_sum] * 1
+    ops += [gen_query_group_age_var] * 1
+    ops += [gen_modify_relation] * 6
+    ops += [gen_query_best_acquaintance] * 1
+    ops += [gen_add_message] * 4
+    ops += [gen_send_message] * 4
+    ops += [gen_query_social_value] * 1
+    ops += [gen_query_received_messages] * 1
+    return ops
+
+
 ops = []
 if TYPE == 'qcs':
-    print('qcs_strong')
-    ops = qcs_strong()
+    print('ba_strong')
+    ops = ba_strong()
 else:
     print(TYPE)
     ops = op_normal()
@@ -217,19 +281,13 @@ def gen(max_len=1000):
     length = random.randint(1, max_len)
     min_ap = min(length // 10, 10)
     min_ag = 1
-    return '\n'.join([gen_add_person() for _ in range(min_ap)]
+    inst = '\n'.join([gen_add_person() for _ in range(min_ap)]
                      + [gen_add_group() for _ in range(min_ag)]
                      + [op() for op in random.choices(ops, k=length-min_ap-min_ag)])
-
-
-def whatever():
-    ops = [gen_add_person] * 15
-    ops += [gen_add_relation] * 25
-    ops += [gen_add_group] * 5
-    ops += [gen_add_to_group] * 10
-    ops += [gen_del_from_group] * 3
-    ops += [gen_modify_relation] * 8
-    return ops
+    person_id.clear()
+    group_id.clear()
+    message_id.clear()
+    return inst
 
 
 def gen_modify_relation_ok_test():
