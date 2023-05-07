@@ -1,5 +1,8 @@
 import random
+import json
 
+
+TYPE = json.load(open('config.json', 'r'))['gen_setting']['type']
 MAX_NAME_LEN = 10
 MAX_AGE = 200
 MIN_VALUE = 1
@@ -175,28 +178,55 @@ def gen(max_len=1000):
     min_ap = min(length // 10, 10)
     min_ag = 1
 
-    ops = [gen_add_person] * 30
-    ops += [gen_add_relation] * 60
-    ops += [gen_query_value] * 5
-    ops += [gen_query_circle] * 15
-    ops += [gen_query_block_sum] * 5
-    ops += [gen_query_triple_sum] * 5
-    ops += [gen_add_group] * 30
-    ops += [gen_add_to_group] * 40
-    ops += [gen_del_from_group] * 15
-    ops += [gen_query_group_value_sum] * 5
-    ops += [gen_query_group_age_var] * 5
-    ops += [gen_modify_relation] * 30
-    ops += [gen_query_best_acquaintance] * 10
-    ops += [gen_query_couple_sum] * 10
-    ops += [gen_add_message] * 25
-    ops += [gen_send_message] * 20
-    ops += [gen_query_social_value] * 5
-    ops += [gen_query_received_messages] * 5
-
+    ops = []
+    if type == 'qcs':
+        ops = qcs_strong()
+    else:
+        ops = op_normal()
+    
     return '\n'.join([gen_add_person() for _ in range(min_ap)]
                      + [gen_add_group() for _ in range(min_ag)]
                      + [op() for op in random.choices(ops, k=length-min_ap-min_ag)])
+
+
+def op_normal():
+    ops = [gen_add_person] * 10
+    ops += [gen_add_relation] * 15
+    ops += [gen_query_value] * 1
+    ops += [gen_query_circle] * 2
+    ops += [gen_query_block_sum] * 1
+    ops += [gen_query_triple_sum] * 1
+    ops += [gen_add_group] * 6
+    ops += [gen_add_to_group] * 8
+    ops += [gen_del_from_group] * 3
+    ops += [gen_query_group_value_sum] * 1
+    ops += [gen_query_group_age_var] * 1
+    ops += [gen_modify_relation] * 6
+    ops += [gen_query_best_acquaintance] * 1
+    ops += [gen_query_couple_sum] * 2
+    ops += [gen_add_message] * 4
+    ops += [gen_send_message] * 4
+    ops += [gen_query_social_value] * 1
+    ops += [gen_query_received_messages] * 1
+    return ops
+
+
+def qcs_strong():
+    ops = [gen_add_person] * 15
+    ops += [gen_add_relation] * 25
+    ops += [gen_modify_relation] * 15
+    ops += [gen_query_couple_sum] * 1
+    return ops
+
+
+def whatever():
+    ops = [gen_add_person] * 15
+    ops += [gen_add_relation] * 25
+    ops += [gen_add_group] * 5
+    ops += [gen_add_to_group] * 10
+    ops += [gen_del_from_group] * 3
+    ops += [gen_modify_relation] * 8
+    return ops
 
 
 def gen_modify_relation_ok_test():

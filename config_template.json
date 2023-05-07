@@ -1,6 +1,11 @@
 {
     "jar_folder_path": "jar",
     "mode": "rand",
+    "gen_setting": {
+        "type": "normal",
+        "type_normal": "normal",
+        "type_qcs": "qcs"
+    },
     "stop": "never",
     "cases": 100,
     "max_input": 10000,
