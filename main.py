@@ -76,6 +76,9 @@ if __name__ == '__main__':
                 inst = gen(MAX_INPUT)
                 with open(os.path.join(input_path, f'{i}.txt'), 'w') as f:
                     f.write(inst)
+            else:
+                with open(os.path.join(input_path, f'{i}.txt'), 'r') as f:
+                    inst = f.read()
             logging.info(f'TESTCASE #{i}')
             if check(inst, i, jars) and CLEAN:
                 os.remove(os.path.join(input_path, f'{i}.txt'))
