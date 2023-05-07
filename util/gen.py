@@ -1,7 +1,10 @@
 import random
 import json
 
-SETTING = json.load(open('config.json', 'r'))['gen_setting']
+config = json.load(open('config.json', 'r'))
+
+CHANGE_FREQ = min(config['cases']//10, 50)
+SETTING = config['gen_setting']
 MAX_NAME_LEN = 10
 MAX_AGE = 200
 MIN_VALUE = 1
@@ -10,12 +13,13 @@ MIN_MODIFY_VALUE = -100
 MAX_MODIFY_VALUE = 100
 MIN_SOCIAL_VALUE = -1000
 MAX_SOCIAL_VALUE = 1000
-USED_ID_PROB = 0.9
-SAME_ID_PROB = 0.1
+USED_ID_PROB = 0.7
+SAME_ID_PROB = 0.3
 
 person_id = set()
 group_id = set()
 message_id = set()
+cnt = 0
 
 
 def to_rand_upper(s):
@@ -44,8 +48,10 @@ def rand_social_value():
     return random.randint(MIN_SOCIAL_VALUE, MAX_SOCIAL_VALUE)
 
 
-def rand_id(used_id=person_id, same_id_prob=USED_ID_PROB):
-    if len(used_id) == 0 or random.random() < same_id_prob:
+def rand_id(used_id=person_id, same_id_prob=None):
+    if same_id_prob is None:
+        same_id_prob = USED_ID_PROB
+    if len(used_id) == 0 or random.random() > same_id_prob:
         id = random.randint(-10000, 10000)
         used_id.add(id)
     else:
@@ -204,9 +210,10 @@ def set_global_prob(same_id_prob, used_id_prob):
 
 def ba_strong():
     set_global_prob(0, 1)
+    relation = random.randint(0, 5)
     ops = [gen_add_person] * 15
-    ops += [gen_add_relation] * 20
-    ops += [gen_modify_relation] * 15
+    ops += [gen_add_relation] * (5 + relation * 5)
+    ops += [gen_modify_relation] * (5 + relation * 3)
     ops += [gen_query_best_acquaintance] * 1
     ops += [gen_query_couple_sum] * 1
     return ops
@@ -214,9 +221,11 @@ def ba_strong():
 
 def message_strong():
     set_global_prob(0, 1)
+    global MAX_MODIFY_VALUE
+    MAX_MODIFY_VALUE = 10
     ops = [gen_add_person] * 8
-    ops += [gen_add_relation] * 30
-    ops += [gen_modify_relation] * 10 
+    ops += [gen_add_relation] * 20
+    ops += [gen_modify_relation] * 5 * random.randint(1, 4)
     ops += [gen_add_group] * 4
     ops += [gen_add_to_group] * 8
     ops += [gen_del_from_group] * 2
@@ -229,9 +238,12 @@ def message_strong():
 
 def group_strong():
     set_global_prob(0, 1)
+    relation = random.randint(0, 4)
+    global MAX_MODIFY_VALUE
+    MAX_MODIFY_VALUE = 10
     ops = [gen_add_person] * 12
-    ops += [gen_add_relation] * 18
-    ops += [gen_modify_relation] * 8
+    ops += [gen_add_relation] * (6 + relation * 3)
+    ops += [gen_modify_relation] * (4 + relation * 2)
     ops += [gen_add_group] * 6
     ops += [gen_add_to_group] * 10
     ops += [gen_del_from_group] * 6
@@ -240,19 +252,23 @@ def group_strong():
     return ops
 
 
-def hw9_strong():
+def weak_strong():
     set_global_prob(0, 1)
+    global MAX_MODIFY_VALUE
+    MAX_MODIFY_VALUE = -100
+    relation = random.randint(1, 10)
     ops = [gen_add_person] * 10
-    ops += [gen_add_relation] * 20
+    ops += [gen_add_relation] * relation * 5
+    ops += [gen_modify_relation] * relation * 2
     ops += [gen_query_circle] * 2
     ops += [gen_query_block_sum] * 1
     ops += [gen_query_triple_sum] * 1
 
 
 def exception_strong():
-    set_global_prob(0.5, 0.5)
-    ops = [gen_add_person] * 5
-    ops += [gen_add_relation] * 8
+    set_global_prob(0.2, 0.8)
+    ops = [gen_add_person] * 20
+    ops += [gen_add_relation] * 30
     ops += [gen_query_value] * 1
     ops += [gen_query_circle] * 1
     ops += [gen_add_group] * 5
@@ -269,29 +285,33 @@ def exception_strong():
     return ops
 
 
-ops = []
 TYPE = SETTING['type']
 if TYPE == 'ba' or TYPE in SETTING['ba']:
     print('ba_strong')
-    ops = ba_strong()
+    get_ops = ba_strong
 elif TYPE == 'message' or TYPE in SETTING['message']:
     print('message_strong')
-    ops = message_strong()
+    get_ops = message_strong
 elif TYPE == 'group' or TYPE in SETTING['group']:
     print('group_strong')
-    ops = group_strong()
+    get_ops = group_strong
 elif TYPE == 'hw9' or TYPE in SETTING['Rank_C_Congratulations']:
-    print('hw9_strong')
-    ops = hw9_strong()
+    print('weak_strong')
+    get_ops = weak_strong
 elif TYPE == 'exception' or TYPE in SETTING['exception']:
     print('exception_strong')
-    ops = exception_strong()
+    get_ops = exception_strong
 else:
     print(TYPE)
-    ops = op_normal()
+    get_ops = op_normal
+ops = get_ops()
 
 
-def gen(max_len=10):
+def gen(max_len=15):
+    global cnt, ops
+    if cnt % CHANGE_FREQ == 0:
+        ops = get_ops()
+    cnt += 1
     length = random.randint(1, max_len)
     min_ap = min(length // 10, 10)
     min_ag = 1

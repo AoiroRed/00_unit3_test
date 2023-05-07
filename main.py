@@ -84,16 +84,14 @@ if __name__ == '__main__':
         for i in range(1, 1+CASES):
             if MODE == 'rand':
                 inst = gen(MAX_INPUT)
-                with open(os.path.join(input_path, f'{i}.txt'), 'w') as f:
-                    f.write(inst)
+                if not CLEAN:
+                    with open(os.path.join(input_path, f'{i}.txt'), 'w') as f:
+                        f.write(inst)
             else:
                 with open(os.path.join(input_path, f'{i}.txt'), 'r') as f:
                     inst = f.read()
             logging.info(f'TESTCASE #{i}')
-            if check(inst, i, jars):
-                if CLEAN:
-                    os.remove(os.path.join(input_path, f'{i}.txt'))
-            else:
+            if not check(inst, i, jars):
                 with open(os.path.join('log', 'err_data', t, f'{i}.txt'), 'w') as f:
                     f.write(inst)
                 print(Fore.RED, end='')
