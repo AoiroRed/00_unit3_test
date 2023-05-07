@@ -2,6 +2,7 @@ import subprocess
 from subprocess import PIPE, STDOUT
 import threading
 from colorama import Fore
+import os
 
 command = ['java', '-jar']
 
@@ -16,7 +17,7 @@ def execute_java(jar_path, stdin, timeout=5):
             return 'Timeout'
     if stderr:
         print(Fore.RED)
-        print(jar_path.split('/')[-1], 'Error:')
+        print(os.path.basename(jar_path)[:-4], 'Error:')
         print(stderr.decode())
         print(Fore.RESET)
     return stdout.decode().strip()
