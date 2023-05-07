@@ -2,7 +2,6 @@ import random
 import json
 
 
-TYPE = json.load(open('config.json', 'r'))['gen_setting']['type']
 MAX_NAME_LEN = 10
 MAX_AGE = 200
 MIN_VALUE = 1
@@ -11,6 +10,7 @@ MIN_MODIFY_VALUE = -100
 MAX_MODIFY_VALUE = 100
 MIN_SOCIAL_VALUE = -1000
 MAX_SOCIAL_VALUE = 1000
+
 
 person_id = set()
 group_id = set()
@@ -173,22 +173,6 @@ def gen_query_received_messages():
     return f'qrm {rand_id()}'
 
 
-def gen(max_len=1000):
-    length = random.randint(1, max_len)
-    min_ap = min(length // 10, 10)
-    min_ag = 1
-
-    ops = []
-    if type == 'qcs':
-        ops = qcs_strong()
-    else:
-        ops = op_normal()
-    
-    return '\n'.join([gen_add_person() for _ in range(min_ap)]
-                     + [gen_add_group() for _ in range(min_ag)]
-                     + [op() for op in random.choices(ops, k=length-min_ap-min_ag)])
-
-
 def op_normal():
     ops = [gen_add_person] * 10
     ops += [gen_add_relation] * 15
@@ -217,6 +201,25 @@ def qcs_strong():
     ops += [gen_modify_relation] * 15
     ops += [gen_query_couple_sum] * 1
     return ops
+
+
+TYPE = json.load(open('config.json', 'r'))['gen_setting']['type']
+ops = []
+if TYPE == 'qcs':
+    print('qcs_strong')
+    ops = qcs_strong()
+else:
+    print(TYPE)
+    ops = op_normal()
+
+
+def gen(max_len=1000):
+    length = random.randint(1, max_len)
+    min_ap = min(length // 10, 10)
+    min_ag = 1
+    return '\n'.join([gen_add_person() for _ in range(min_ap)]
+                     + [gen_add_group() for _ in range(min_ag)]
+                     + [op() for op in random.choices(ops, k=length-min_ap-min_ag)])
 
 
 def whatever():
