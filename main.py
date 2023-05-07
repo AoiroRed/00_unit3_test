@@ -35,7 +35,7 @@ def check(inst, i, jars):
     for t in tasks:
         t.join()
 
-    r = cmp(paths, i)
+    r = cmp(paths, i, inst.splitlines())
 
     if r and CLEAN and i > 0:
         for path in paths:

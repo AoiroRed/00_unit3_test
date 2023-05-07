@@ -7,7 +7,7 @@ from colorama import Fore
 MAX_DIFF = json.load(open('config.json', 'r'))['max_diff']
 
 
-def cmp(files, case=-1):
+def cmp(files, case=-1, inst=None):
     if len(files) <= 1:
         return True
     f = []
@@ -48,6 +48,8 @@ def cmp(files, case=-1):
                 print(Fore.RED, end='')
                 logging.error('Different on line %d:' % line_cnt)
                 print(Fore.RESET, end='')
+                if inst:
+                    logging.error('input\t: ' + inst[line_cnt - 1])
                 for i in range(len(lines)):
                     logging.error('%-8s: ' %
                                   os.path.basename(files[i])[:-4] + lines[i])
