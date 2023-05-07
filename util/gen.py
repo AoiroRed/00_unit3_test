@@ -1,7 +1,7 @@
 import random
 import json
 
-TYPE = json.load(open('config.json', 'r'))['gen_setting']['type']
+SETTING = json.load(open('config.json', 'r'))['gen_setting']
 MAX_NAME_LEN = 10
 MAX_AGE = 200
 MIN_VALUE = 1
@@ -59,8 +59,8 @@ add_relation id(int) id(int) value(int)
 query_value id(int) id(int)
 query_circle id(int) id(int)
 query_block_sum
-query_triple_sum 
-    
+query_triple_sum
+
 add_group id(int)
 add_to_group id(int) id(int)
 del_from_group id(int) id(int)
@@ -196,7 +196,14 @@ def op_normal():
     return ops
 
 
+def set_global_prob(same_id_prob, used_id_prob):
+    global SAME_ID_PROB, USED_ID_PROB
+    SAME_ID_PROB = same_id_prob
+    USED_ID_PROB = used_id_prob
+
+
 def ba_strong():
+    set_global_prob(0, 1)
     ops = [gen_add_person] * 15
     ops += [gen_add_relation] * 20
     ops += [gen_modify_relation] * 15
@@ -206,78 +213,85 @@ def ba_strong():
 
 
 def message_strong():
-    ops = [gen_add_person] * 10
-    ops += [gen_add_relation] * 15
-    ops += [gen_query_value] * 1
-    ops += [gen_query_circle] * 2
-    ops += [gen_query_block_sum] * 1
-    ops += [gen_query_triple_sum] * 1
-    ops += [gen_add_group] * 6
+    set_global_prob(0, 1)
+    ops = [gen_add_person] * 8
+    ops += [gen_add_relation] * 30
+    ops += [gen_modify_relation] * 10 
+    ops += [gen_add_group] * 4
     ops += [gen_add_to_group] * 8
-    ops += [gen_del_from_group] * 3
-    ops += [gen_query_group_value_sum] * 1
-    ops += [gen_query_group_age_var] * 1
-    ops += [gen_modify_relation] * 6
-    ops += [gen_query_best_acquaintance] * 1
-    ops += [gen_query_couple_sum] * 2
-    ops += [gen_add_message] * 4
-    ops += [gen_send_message] * 4
+    ops += [gen_del_from_group] * 2
+    ops += [gen_add_message] * 10
+    ops += [gen_send_message] * 8
     ops += [gen_query_social_value] * 1
     ops += [gen_query_received_messages] * 1
     return ops
 
 
 def group_strong():
-    ops = [gen_add_person] * 10
-    ops += [gen_add_relation] * 15
-    ops += [gen_query_value] * 1
-    ops += [gen_query_circle] * 2
-    ops += [gen_query_block_sum] * 1
-    ops += [gen_query_triple_sum] * 1
+    set_global_prob(0, 1)
+    ops = [gen_add_person] * 12
+    ops += [gen_add_relation] * 18
+    ops += [gen_modify_relation] * 8
     ops += [gen_add_group] * 6
-    ops += [gen_add_to_group] * 8
-    ops += [gen_del_from_group] * 3
+    ops += [gen_add_to_group] * 10
+    ops += [gen_del_from_group] * 6
     ops += [gen_query_group_value_sum] * 1
     ops += [gen_query_group_age_var] * 1
-    ops += [gen_modify_relation] * 6
-    ops += [gen_query_best_acquaintance] * 1
-    ops += [gen_query_couple_sum] * 2
-    ops += [gen_add_message] * 4
-    ops += [gen_send_message] * 4
-    ops += [gen_query_social_value] * 1
-    ops += [gen_query_received_messages] * 1
     return ops
 
 
-def exception_strong():
+def hw9_strong():
+    set_global_prob(0, 1)
     ops = [gen_add_person] * 10
-    ops += [gen_add_relation] * 15
-    ops += [gen_query_value] * 1
+    ops += [gen_add_relation] * 20
     ops += [gen_query_circle] * 2
-    ops += [gen_add_group] * 6
-    ops += [gen_add_to_group] * 8
-    ops += [gen_del_from_group] * 3
+    ops += [gen_query_block_sum] * 1
+    ops += [gen_query_triple_sum] * 1
+
+
+def exception_strong():
+    set_global_prob(0.5, 0.5)
+    ops = [gen_add_person] * 5
+    ops += [gen_add_relation] * 8
+    ops += [gen_query_value] * 1
+    ops += [gen_query_circle] * 1
+    ops += [gen_add_group] * 5
+    ops += [gen_add_to_group] * 5
+    ops += [gen_del_from_group] * 5
     ops += [gen_query_group_value_sum] * 1
     ops += [gen_query_group_age_var] * 1
-    ops += [gen_modify_relation] * 6
+    ops += [gen_modify_relation] * 5
     ops += [gen_query_best_acquaintance] * 1
-    ops += [gen_add_message] * 4
-    ops += [gen_send_message] * 4
+    ops += [gen_add_message] * 5
+    ops += [gen_send_message] * 5
     ops += [gen_query_social_value] * 1
     ops += [gen_query_received_messages] * 1
     return ops
 
 
 ops = []
-if TYPE == 'qcs':
+TYPE = SETTING['type']
+if TYPE == 'ba' or TYPE in SETTING['ba']:
     print('ba_strong')
     ops = ba_strong()
+elif TYPE == 'message' or TYPE in SETTING['message']:
+    print('message_strong')
+    ops = message_strong()
+elif TYPE == 'group' or TYPE in SETTING['group']:
+    print('group_strong')
+    ops = group_strong()
+elif TYPE == 'hw9' or TYPE in SETTING['Rank_C_Congratulations']:
+    print('hw9_strong')
+    ops = hw9_strong()
+elif TYPE == 'exception' or TYPE in SETTING['exception']:
+    print('exception_strong')
+    ops = exception_strong()
 else:
     print(TYPE)
     ops = op_normal()
 
 
-def gen(max_len=1000):
+def gen(max_len=10):
     length = random.randint(1, max_len)
     min_ap = min(length // 10, 10)
     min_ag = 1
