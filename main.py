@@ -6,6 +6,7 @@ import logging.config
 from colorama import Fore
 import os
 import json
+import time
 
 
 config = json.load(open('config.json', 'r'))
@@ -15,6 +16,7 @@ MODE = config['mode']
 CASES = config['cases']
 MAX_INPUT = config['max_input']
 CLEAN = config['clean']
+STOP = config['stop']
 
 input_path = os.path.join('data', 'input')
 output_path = os.path.join('data', 'output')
@@ -46,6 +48,14 @@ def check(inst, i, jars):
 
 
 if __name__ == '__main__':
+
+    t = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
+    print(Fore.GREEN, end='')
+    print(f'[{t}]', end=' ')
+    print(Fore.RESET, end='')
+    print('Start testing...')
+    if not os.path.exists(os.path.join('log', 'err_data', t)):
+        os.mkdir(os.path.join('log', 'err_data', t))
 
     logging.config.fileConfig('logging.conf')
 
@@ -80,8 +90,17 @@ if __name__ == '__main__':
                 with open(os.path.join(input_path, f'{i}.txt'), 'r') as f:
                     inst = f.read()
             logging.info(f'TESTCASE #{i}')
-            if check(inst, i, jars) and CLEAN:
-                os.remove(os.path.join(input_path, f'{i}.txt'))
+            if check(inst, i, jars):
+                if CLEAN:
+                    os.remove(os.path.join(input_path, f'{i}.txt'))
+            else:
+                with open(os.path.join('log', 'err_data', t, f'{i}.txt'), 'w') as f:
+                    f.write(inst)
+                print(Fore.RED, end='')
+                if STOP == 'first':
+                    logging.info(f'Failed at #{i}!')
+                    print(Fore.RESET)
+                    exit(0)
 
     elif MODE == 'input':
         input_file = 'input.txt'
@@ -96,4 +115,6 @@ if __name__ == '__main__':
             os.mkdir('output')
         with open(input_file, 'r') as f:
             inst = f.read()
-            check(inst, -1, jars)
+            if not check(inst, -1, jars):
+                with open(os.path.join('log', 'err_data', t, f'input.txt'), 'w') as f:
+                    f.write(inst)
