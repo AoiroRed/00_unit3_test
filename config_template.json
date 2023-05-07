@@ -3,6 +3,6 @@
     "mode": "rand",
     "cases": 100,
     "max_input": 10000,
-    "clean": false,
-    "max_diff": 3
+    "clean": true,
+    "max_diff": 5
 }
