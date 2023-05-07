@@ -46,7 +46,7 @@ def rand_social_value():
 
 def rand_id(used_id=person_id, same_id_prob=USED_ID_PROB):
     if len(used_id) == 0 or random.random() < same_id_prob:
-        id = random.randint(-10, 100)
+        id = random.randint(-10000, 10000)
         used_id.add(id)
     else:
         id = random.choice(list(used_id))
@@ -158,7 +158,7 @@ def gen_query_couple_sum():
 
 def gen_add_message():
     type = random.randint(0, 1)
-    return f'am {rand_id(message_id)} {rand_social_value()} {type} ' + \
+    return f'am {rand_id(message_id, same_id_prob=SAME_ID_PROB)} {rand_social_value()} {type} ' + \
         f'{random.choice(list(person_id))} {random.choice(list(group_id if type else person_id))}'
 
 
@@ -288,13 +288,6 @@ def gen(max_len=1000):
     group_id.clear()
     message_id.clear()
     return inst
-
-
-def gen_modify_relation_ok_test():
-    ret = 'mrok '
-    type = random.choice([i for i in range(-1, 21)]-[13, 14, 18, 19])
-    n = random.randint(1, 20)
-    people = random.sample(range(-0x7fffffff-1, 0x7fffffff), n)
 
 
 if __name__ == '__main__':
