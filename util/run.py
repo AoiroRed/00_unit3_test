@@ -3,11 +3,14 @@ from subprocess import PIPE, STDOUT
 import threading
 from colorama import Fore
 import os
+import json
+
 
 command = ['java', '-jar']
+TIME_LIMIT = json.load(open('config.json', 'r'))['time_limit']
 
 
-def execute_java(jar_path, stdin, timeout=5):
+def execute_java(jar_path, stdin, timeout=TIME_LIMIT):
     cmd = command + [jar_path]
     with subprocess.Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=STDOUT) as proc:
         try:

@@ -14,7 +14,6 @@ config = json.load(open('config.json', 'r'))
 JAR_FOLDER_PATH = config['jar_folder_path']
 MODE = config['mode']
 CASES = config['cases']
-MAX_INPUT = config['max_input']
 CLEAN = config['clean']
 STOP = config['stop']
 
@@ -83,7 +82,7 @@ if __name__ == '__main__':
 
         for i in range(1, 1+CASES):
             if MODE == 'rand':
-                inst = gen(MAX_INPUT)
+                inst = gen()
                 if not CLEAN:
                     with open(os.path.join(input_path, f'{i}.txt'), 'w') as f:
                         f.write(inst)
@@ -94,8 +93,8 @@ if __name__ == '__main__':
             if not check(inst, i, jars):
                 with open(os.path.join('log', 'err_data', t, f'{i}.txt'), 'w') as f:
                     f.write(inst)
-                print(Fore.RED, end='')
                 if STOP == 'first':
+                    print(Fore.RED, end='')
                     logging.info(f'Failed at #{i}!')
                     print(Fore.RESET)
                     exit(0)

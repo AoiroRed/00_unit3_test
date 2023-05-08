@@ -1,10 +1,12 @@
 import random
 import json
+import math
 
 config = json.load(open('config.json', 'r'))
 
-CHANGE_FREQ = min(config['cases']//10, 50)
+CHANGE_FREQ = min(config['cases']//20, 50)
 SETTING = config['gen_setting']
+LEN = SETTING['max_input']
 MAX_NAME_LEN = 10
 MAX_AGE = 200
 MIN_VALUE = 1
@@ -165,7 +167,8 @@ def gen_query_couple_sum():
 def gen_add_message():
     type = random.randint(0, 1)
     return f'am {rand_id(message_id, same_id_prob=SAME_ID_PROB)} {rand_social_value()} {type} ' + \
-        f'{random.choice(list(person_id))} {random.choice(list(group_id if type else person_id))}'
+        f'{rand_id(person_id, same_id_prob=1)} ' + \
+        f'{rand_id(group_id if type else person_id, same_id_prob=1)}'
 
 
 def gen_send_message():
@@ -181,6 +184,9 @@ def gen_query_received_messages():
 
 
 def op_normal():
+    if random.random() < 0.3:
+        return random.choice([ba_strong, message_strong,
+                              group_strong, weak_strong, exception_strong])()
     ops = [gen_add_person] * 10
     ops += [gen_add_relation] * 15
     ops += [gen_query_value] * 1
@@ -263,6 +269,7 @@ def weak_strong():
     ops += [gen_query_circle] * 2
     ops += [gen_query_block_sum] * 1
     ops += [gen_query_triple_sum] * 1
+    return ops
 
 
 def exception_strong():
@@ -285,8 +292,39 @@ def exception_strong():
     return ops
 
 
+def inst_normal():
+    global cnt, ops
+    if cnt % CHANGE_FREQ == 0:
+        ops = get_ops()
+    cnt += 1
+    inst = [gen_add_person() for _ in range(min_ap)]
+    inst += [gen_add_group() for _ in range(min_ag)]
+    inst += [gen_add_relation() for _ in range(min_ar)]
+    inst += [op() for op in random.choices(ops, k=LEN-min_ap-min_ag-min_ar)]
+
+    return inst
+
+
+def qcs_time_critical():
+    ap = random.randint(int(math.sqrt(LEN)), LEN//2)
+    qcs = random.randint(LEN//10, LEN//4)
+    ar = LEN - ap - qcs
+    inst = [gen_add_person() for _ in range(ap)]
+    inst += [gen_add_relation() for _ in range(ar)]
+    inst += [gen_query_couple_sum()] * qcs
+    return inst
+
+
+get_inst = inst_normal
+get_ops = op_normal
+min_ar = min(LEN // 10, 10)
+min_ap = min(LEN // 10, 10)
+min_ag = 1
 TYPE = SETTING['type']
-if TYPE == 'ba' or TYPE in SETTING['ba']:
+if TYPE == 'qcs_time_critical':
+    print('qcs_time_critical')
+    get_inst = qcs_time_critical
+elif TYPE == 'ba' or TYPE in SETTING['ba']:
     print('ba_strong')
     get_ops = ba_strong
 elif TYPE == 'message' or TYPE in SETTING['message']:
@@ -307,22 +345,12 @@ else:
 ops = get_ops()
 
 
-def gen(max_len=15):
-    global cnt, ops
-    if cnt % CHANGE_FREQ == 0:
-        ops = get_ops()
-    cnt += 1
-    length = random.randint(1, max_len)
-    min_ap = min(length // 10, 10)
-    min_ag = 1
-    inst = '\n'.join([gen_add_person() for _ in range(min_ap)]
-                     + [gen_add_group() for _ in range(min_ag)]
-                     + [op() for op in random.choices(ops, k=length-min_ap-min_ag)])
+def gen():
     person_id.clear()
     group_id.clear()
     message_id.clear()
-    return inst
+    return '\n'.join(get_inst())
 
 
 if __name__ == '__main__':
-    print(gen())
+    print(gen(15))

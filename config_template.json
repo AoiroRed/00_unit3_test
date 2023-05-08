@@ -1,13 +1,15 @@
 {
     "jar_folder_path": "jar",
     "mode": "rand",
-    "stop": "first",
-    "cases": 1000,
-    "max_input": 1000,
-    "clean": true,
+    "stop": "never",
+    "cases": 100,
+    "clean": false,
     "max_diff": 5,
+    "time_limit": 10,
     "gen_setting": {
+        "max_input": 1000,
         "type": "normal",
+        "normal": [],
         "ba": [
             "qcs",
             "qba"
