@@ -15,6 +15,7 @@ JAR_FOLDER_PATH = config['jar_folder_path']
 MODE = config['mode']
 CASES = config['cases']
 CLEAN = config['clean']
+CPU_TIME = config['cpu_time']
 STOP = config['stop']
 
 input_path = os.path.join('data', 'input')
@@ -29,7 +30,7 @@ def check(inst, i, jars):
         path = os.path.join(output_path, name, f'{name}_{i}.txt') if i > 0 else os.path.join(
             'output', os.path.basename(jar)[:-4] + '_out.txt')
         paths.append(path)
-        t = jar_thread(jar, inst, path)
+        t = jar_thread(name, jar, inst, path)
         tasks.append(t)
         t.start()
 
@@ -37,6 +38,13 @@ def check(inst, i, jars):
         t.join()
 
     r = cmp(paths, i, inst.splitlines())
+
+    # if CPU_TIME:
+    #     for t in tasks:
+    #         print(Fore.GREEN, end='')
+    #         print(f'{t.get_name()} CPU Time:', end=' ')
+    #         print(Fore.RESET, end='')
+    #         print(f'{t.get_cpu_time()}s')
 
     if r and CLEAN and i > 0:
         for path in paths:
@@ -48,15 +56,21 @@ def check(inst, i, jars):
 
 if __name__ == '__main__':
 
+    logging.config.fileConfig('logging.conf')
+
     t = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
     print(Fore.GREEN, end='')
     print(f'[{t}]', end=' ')
     print(Fore.RESET, end='')
     print('Start testing...')
-    if not os.path.exists(os.path.join('log', 'err_data', t)):
-        os.mkdir(os.path.join('log', 'err_data', t))
-
-    logging.config.fileConfig('logging.conf')
+    
+    log_path = os.path.join('log', 'err_data', t)
+    if not os.path.exists(log_path):
+        os.mkdir(log_path)
+    handler = logging.FileHandler(os.path.join(log_path, 'error.log'), encoding='utf-8')
+    handler.setLevel(logging.ERROR)
+    logging.getLogger('error').addHandler(handler)
+    logging.getLogger().addHandler(handler)
 
     if not os.path.exists(JAR_FOLDER_PATH):
         print(Fore.RED, end='')
@@ -74,6 +88,9 @@ if __name__ == '__main__':
             os.mkdir('data')
         if not os.path.exists(input_path):
             os.mkdir(input_path)
+        elif CLEAN:
+            for file in os.listdir(input_path):
+                os.remove(os.path.join(input_path, file))
         if not os.path.exists(output_path):
             os.mkdir(output_path)
         for jar in jars:
@@ -91,8 +108,11 @@ if __name__ == '__main__':
                     inst = f.read()
             logging.info(f'TESTCASE #{i}')
             if not check(inst, i, jars):
-                with open(os.path.join('log', 'err_data', t, f'{i}.txt'), 'w') as f:
+                with open(os.path.join(log_path, f'{i}.txt'), 'w') as f:
                     f.write(inst)
+                if CLEAN:
+                    with open(os.path.join(input_path, f'{i}.txt'), 'w') as f:
+                        f.write(inst)
                 if STOP == 'first':
                     print(Fore.RED, end='')
                     logging.info(f'Failed at #{i}!')
@@ -113,5 +133,5 @@ if __name__ == '__main__':
         with open(input_file, 'r') as f:
             inst = f.read()
             if not check(inst, -1, jars):
-                with open(os.path.join('log', 'err_data', t, f'input.txt'), 'w') as f:
+                with open(os.path.join(log_path, f'input.txt'), 'w') as f:
                     f.write(inst)

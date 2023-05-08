@@ -27,16 +27,25 @@ def execute_java(jar_path, stdin, timeout=TIME_LIMIT):
 
 
 class jar_thread(threading.Thread):
-    def __init__(self, jar, stdin, outpath=None):
+    def __init__(self, name, jar, stdin, outpath=None):
         threading.Thread.__init__(self)
+        self.name = name
         self.jar = jar
         self.stdin = stdin
         self.outpath = outpath
 
     def run(self):
-        self.result = execute_java(self.jar, self.stdin).replace('\r', '').replace('\n\n', '\n')
+        self.result = execute_java(self.jar, self.stdin).replace(
+            '\r', '').replace('\n\n', '\n')
         if self.outpath:
             with open(self.outpath, 'w') as f:
                 f.write(self.result)
+
     def get_result(self):
         return self.result
+
+    def get_cpu_time(self):
+        return self.cpu_time
+
+    def get_name(self):
+        return self.name
