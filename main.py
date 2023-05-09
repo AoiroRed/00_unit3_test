@@ -15,7 +15,6 @@ JAR_FOLDER_PATH = config['jar_folder_path']
 MODE = config['mode']
 CASES = config['cases']
 CLEAN = config['clean']
-CPU_TIME = config['cpu_time']
 STOP = config['stop']
 
 input_path = os.path.join('data', 'input')
