@@ -55,6 +55,9 @@ def check(inst, i, jars):
 
 if __name__ == '__main__':
 
+    if not os.path.exists('log'):
+        os.mkdir('log')
+
     logging.config.fileConfig('logging.conf')
 
     t = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
@@ -65,7 +68,7 @@ if __name__ == '__main__':
     
     log_path = os.path.join('log', 'err_data', t)
     if not os.path.exists(log_path):
-        os.mkdir(log_path)
+        os.makedirs(log_path)
     handler = logging.FileHandler(os.path.join(log_path, 'error.log'), encoding='utf-8')
     handler.setLevel(logging.ERROR)
     logging.getLogger('error').addHandler(handler)
