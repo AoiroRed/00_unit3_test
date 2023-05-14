@@ -31,7 +31,7 @@ group_id = set()
 message_id = set()
 emoji_id = set()
 has_edge = set()
-no_edge = set()
+no_edge = []
 cnt = 0
 
 
@@ -83,9 +83,8 @@ def gen_id(id_set=person_id, new_id_prob=None):
         new_id_prob = NEW_ID_PROB
     if random.random() < new_id_prob or len(id_set) == 0:
         id = new_id(id_set)
+        no_edge += [min((id, idd), (idd, id)) for idd in id_set]
         id_set.add(id)
-        no_edge.union(set([min((id, idd), (idd, id))
-                      for idd in id_set if idd != id]))
     else:
         id = random.choice(list(id_set))
     return id
@@ -102,8 +101,7 @@ def gen_edge(new_edge_prob=None):
     if new_edge_prob is None:
         new_edge_prob = NEW_EDGE_PROB
     if len(no_edge) and random.random() < new_edge_prob:
-        edge = random.choice(list(no_edge))
-        no_edge.remove(edge)
+        edge = no_edge.pop(random.randint(0, len(no_edge)-1))
         has_edge.add(edge)
         e = '%d %d' % edge
     else:
@@ -120,7 +118,7 @@ def get_edge(used_edge_prob=None, no_edge_prob=None):
     if len(has_edge) and prob < used_edge_prob:
         id1, id2 = random.choice(list(has_edge))
     elif len(no_edge) and prob < used_edge_prob + no_edge_prob:
-        id1, id2 = random.choice(list(no_edge))
+        id1, id2 = random.choice(no_edge)
     else:
         id1 = new_id()
         id2 = get_id()
@@ -401,12 +399,21 @@ def inst_normal():
 
 
 def qlm_strong():
+    edges = []
     set_global_prob(1, 1, 1, 1)
-    ap = random.randint(int(math.sqrt(LEN)), LEN//3)
-    ar = LEN - ap * 2
-    inst = [gen_add_person() for _ in range(ap)]
-    inst += [gen_add_relation() for _ in range(ar)]
-    inst += [f'qlm {i}' for i in person_id]
+    ap = random.randint(int(math.sqrt(LEN)), LEN//4)
+    ar = LEN - ap * 3
+    inst = [f'ap {i} {i} {1}' for i in range(ap)]
+    for i in range(ap):
+        person_id.add(i)
+        inst += [f'ar {i} {i+1} 100']
+        edges += [(i, j) for j in range(i+2, ap)]
+    inst.pop()
+    for _ in range(ar):
+        edge = edges.pop(random.randint(0, len(edges)-1))
+        inst += ['ar %d %d ' % edge + f'{rand_value()}']
+    inst += [f'qlm {i}' for i in range(ap)]
+    inst += ['qbs']
     return inst
 
 
@@ -418,10 +425,10 @@ min_ag = 1
 TYPE = SETTING['type']
 if config['mode'] != 'rand':
     None
-elif TYPE == 'emoji':
+elif TYPE == 'emoji' or TYPE in SETTING['emoji']:
     print('emoji')
     get_ops = emoji_strong
-elif TYPE == 'qlm':
+elif TYPE == 'qlm' or TYPE in SETTING['emoji']:
     print('qlm')
     get_inst = qlm_strong
 else:
