@@ -15,7 +15,6 @@ JAR_FOLDER_PATH = config['jar_folder_path']
 MODE = config['mode']
 CASES = config['cases']
 CLEAN = config['clean']
-CPU_TIME = config['cpu_time']
 STOP = config['stop']
 
 input_path = os.path.join('data', 'input')
@@ -39,13 +38,6 @@ def check(inst, i, jars):
 
     r = cmp(paths, i, inst.splitlines())
 
-    # if CPU_TIME:
-    #     for t in tasks:
-    #         print(Fore.GREEN, end='')
-    #         print(f'{t.get_name()} CPU Time:', end=' ')
-    #         print(Fore.RESET, end='')
-    #         print(f'{t.get_cpu_time()}s')
-
     if r and CLEAN and i > 0:
         for path in paths:
             os.remove(path)
@@ -54,9 +46,17 @@ def check(inst, i, jars):
     return r
 
 
-if __name__ == '__main__':
+def single_test(input_file):
+    if not os.path.exists('output'):
+        os.mkdir('output')
+    with open(input_file, 'r', encoding='utf-8') as f:
+        inst = f.read()
+        if not check(inst, -1, jars):
+            with open(os.path.join(log_path, f'input.txt'), 'w') as f:
+                f.write(inst)
 
-    logging.config.fileConfig('logging.conf')
+
+if __name__ == '__main__':
 
     t = time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime())
     print(Fore.GREEN, end='')
@@ -66,7 +66,9 @@ if __name__ == '__main__':
     
     log_path = os.path.join('log', 'err_data', t)
     if not os.path.exists(log_path):
-        os.mkdir(log_path)
+        os.makedirs(log_path)
+
+    logging.config.fileConfig('logging.conf')
     handler = logging.FileHandler(os.path.join(log_path, 'error.log'), encoding='utf-8')
     handler.setLevel(logging.ERROR)
     logging.getLogger('error').addHandler(handler)
@@ -120,18 +122,18 @@ if __name__ == '__main__':
                     exit(0)
 
     elif MODE == 'input':
-        input_file = 'input.txt'
-        if not os.path.exists(input_file):
-            input_file = input('Input file name: ')
-            if not os.path.exists(input_file):
-                print(Fore.RED, end='')
-                logging.info('No input file!')
-                print(Fore.RESET)
-                exit(0)
-        if not os.path.exists('output'):
-            os.mkdir('output')
-        with open(input_file, 'r') as f:
-            inst = f.read()
-            if not check(inst, -1, jars):
-                with open(os.path.join(log_path, f'input.txt'), 'w') as f:
-                    f.write(inst)
+        # input_file = 'input.txt'
+        # if not os.path.exists(input_file):
+        #     input_file = input('Input file name: ')
+        #     if not os.path.exists(input_file):
+        #         print(Fore.RED, end='')
+        #         logging.info('No input file!')
+        #         print(Fore.RESET)
+        #         exit(0)
+        # single_test(input_file)
+        input_path = 'input'
+        for input_file in os.listdir(input_path):
+            if input_file.endswith('.txt'):
+                logging.info(f'TESTCASE {input_file}')
+                single_test(os.path.join(input_path, input_file))
+        

@@ -8,6 +8,8 @@ MAX_DIFF = json.load(open('config.json', 'r'))['max_diff']
 
 
 def cmp(files, case=-1, inst=None):
+    if inst:
+        inst += ['No input'] * 10
     if len(files) <= 1:
         return True
     f = []
