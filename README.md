@@ -18,5 +18,3 @@ stop 有两种选项：
 - `"never"` 不自动停止
 
 gen_setting 中 type 设置为指令名或对应类名可进行对应强测
-
-`mrok` 摆了。
