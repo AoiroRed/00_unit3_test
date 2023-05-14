@@ -2,46 +2,22 @@
     "jar_folder_path": "jar",
     "mode": "rand",
     "stop": "never",
-    "cases": 100,
+    "cases": 10,
     "clean": false,
-    "max_diff": 5,
-    "time_limit": 10,
+    "max_diff": 100,
+    "time_limit": 5,
     "gen_setting": {
-        "max_input": 1000,
+        "max_input": 10000,
         "type": "normal",
         "normal": [],
-        "ba": [
-            "qcs",
-            "qba"
+        "qlm": [
+            "qlm"
         ],
-        "group": [
-            "ag",
-            "atg",
-            "dfg",
-            "qgvs",
-            "qgav"
-        ],
-        "message": [
-            "am",
-            "sm",
-            "qrm",
-            "qsv"
-        ],
-        "Rank_C_Congratulations": [
-            "qci",
-            "qbs",
-            "qts"
-        ],
-        "How_Did_You_Passed_Midtest": [
-            "ap",
-            "ar",
-            "qv"
-        ],
-        "exception": [
-            "mr",
-            "ap",
-            "ar",
-            "Set it yourself"
+        "emoji": [
+            "aem",
+            "mei",
+            "qp",
+            "dce"
         ],
         "other": "I don't know"
     }
