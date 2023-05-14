@@ -79,6 +79,7 @@ def new_id(id_set=person_id):
 
 
 def gen_id(id_set=person_id, new_id_prob=None):
+    global no_edge
     if new_id_prob is None:
         new_id_prob = NEW_ID_PROB
     if random.random() < new_id_prob or len(id_set) == 0:
